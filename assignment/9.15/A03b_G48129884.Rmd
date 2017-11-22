@@ -1,0 +1,53 @@
+---
+title: "A03b_G48129884"
+output: html_document
+---
+##Part B
+
+###a.All purchases made during January and February of 2008
+```{r}
+library(readr)
+dataset <- data.frame(read_csv("SupermarketTransactions.csv", 
+    col_types = cols(`Purchase Date` = col_datetime(format = "%m/%d/%Y"))))
+head(dataset)
+```
+
+```{r}
+op <- par(mfrow = c(1, 2)) 
+a =as.factor(subset(data.frame(dataset),(Purchase.Date >="2008-1-1" & Purchase.Date <="2008-3-1"))[,15])
+barplot(summary(a), xlab="Units sold", ylab="Frequency",border="red", col="yellow",las=2,main = "barchart pf Units sold")
+b =subset(data.frame(dataset),(Purchase.Date >="2008-1-1" & Purchase.Date <="2008-3-1"))[,16]
+hist(b,main = "histogram of Revenue")
+```
+ 
+
+### b. All purchase made by married female homeowners
+```{r}
+op <- par(mfrow = c(1, 2)) 
+a = as.factor(subset(data.frame(dataset),(Gender=="F"&Marital.Status =="M"& Homeowner =="Y"))[,15])
+barplot(summary(a), xlab="Units sold", ylab="Frequency",border="red", col="yellow",las=2,main = "barchart pf Units sold")
+b = subset(data.frame(dataset),(Gender=="F"&Marital.Status =="M"&Homeowner =="Y"))[,16]
+hist(b,main = "histogram of Revenue")
+
+```
+
+### c. All purchases made in the state of California.
+```{r}
+op <- par(mfrow = c(1, 2)) 
+a = as.factor(subset(data.frame(dataset),State.or.Province =="CA")[,15])
+barplot(summary(a), xlab="Units sold", ylab="Frequency",border="red", col="yellow",las=2,main = "barchart pf Units sold")
+b = subset(data.frame(dataset),(State.or.Province =="CA"))[,16]
+hist(b,main = "histogram of Revenue")
+```
+
+### d. All purchases made in the Produce product department.
+```{r}
+op <- par(mfrow = c(1, 2)) 
+a = as.factor(subset(data.frame(dataset),Product.Department =="Produce")[,15])
+barplot(summary(a), xlab="Units sold", ylab="Frequency",border="red", col="yellow",las=2,main = "barchart pf Units sold")
+b = subset(data.frame(dataset),(Product.Department =="Produce"))[,16]
+hist(b,main = "histogram of Revenue")
+```
+
+According to hisgrams of Revenue, subset of revenue in terms of those conditions such as location, data and so on, Revenue distributons are all right skewed, which means, in some infrequent condition (for example, anniversary of the department store), the revenues are abnomal higher than others. Overall, Revenue concentrate around 10.
+According to bar char of Units sold, we can find that units of sold are more symmetry and more normal-distribution like, concentrating around 4.

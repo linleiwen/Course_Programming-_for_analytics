@@ -1,0 +1,168 @@
+---
+title: "A05_G48129884"
+output: html_document
+---
+
+#A
+
+## 1.Use the first half of this dataset to be the training set and the second half of this dataset to be the test set. Your task is to predict the credit rating of an individual.
+
+```{r}
+dataset = read.csv("creditdata.csv")
+str(dataset)
+head(dataset)
+training_set = dataset[1:(4446/2),]
+test_set = dataset[(4446/2+1):4446,]
+```
+
+## 2.Please ensure that the data are clean.
+```{r}
+sum(is.na(dataset))
+
+```
+
+it is a clean dataset
+
+## 3.Please provide the relevant exploratory and descriptive analysis.
+
+```{r}
+table(dataset$rating)
+table(dataset$homeown)
+table(dataset$mstat)
+table(dataset$rcds)
+table(dataset$jtype)
+summary(dataset$experience)
+summary(dataset$loandurn)
+summary(dataset$age)
+summary(dataset$explvl)
+summary(dataset$inc)
+summary(dataset$assts)
+summary(dataset$loanamount)
+summary(dataset$purchprice)
+
+```
+## 4.Please explain how this descriptive analysis informed your next steps.
+
+it is unclear the way those independent variables influence the target variable.
+We should fit the data into classification model to determine their relationship.
+
+#B
+
+## 1.Please make a predictive model using logistic regression.
+
+Fitting Logistic Regression to the Training set
+
+```{r}
+classifier.logistic = glm(formula = rating ~ .,
+                 family = binomial,
+                 data = training_set)
+summary(classifier.logistic)
+```
+
+## 2.Which variables in the logistic regression model are significant or important?
+
+Ans: experience, rcds, jtype, explvl, inc, assts, debt, loanamount, purchprice.
+
+### 3.Please make a predictive model using a decision tree
+
+```{r}
+library(rattle)
+library(rpart)
+classifier.decision = rpart(formula = rating ~ .,
+                   data = training_set)
+classifier.decision.prune <- prune(classifier.decision, cp = 0.024)
+fancyRpartPlot(classifier.decision.prune, main="DT for rpart",  palettes=c("Reds", "Oranges"))
+```
+
+### 4.Describe and explain the tree. How will you explain the tree to your client (less than 250words)?
+
+According to the decision tree model, the potential borrower who has good credit has either those 3 attributes:
+
+1.they have no record, job experience is less than 1.5, their jobs are not freelance nor others nor partime.
+
+2.they have no record, job experience is less than 1.5, their jobs are freelance or others or partime, but their assets are more than 3750.
+
+3.they have no record, job experience is more than 1.5.
+
+
+According to the decision tree model, the potential borrower who has bad credit has either those 2 attributes:
+
+1.they have no record, job experience is less than 1.5, their jobs are freelance or others or partime, but their assets are less than 3750
+
+2.they have records
+
+# C
+
+## 1. Please help your client understand which model is better for predicting purposes.
+
+### Making the Confusion Matrix of logistic regression
+
+```{r}
+y_prob.logisitc = predict(classifier.logistic,type = 'response', newdata = test_set[-1])## probability
+y_pred.logisitc = ifelse(y_prob.logisitc > 0.5, 1, 0)
+```
+
+confusing matrix and accurancy of logistic regression
+
+```{r}
+cm = table(test_set[, 1], y_pred.logisitc)
+cm
+accurancy.logisitc = (cm[1,1]+cm[2,2])/sum(cm)
+print(paste('Accuracy of logistic regression:',accurancy.logisitc))
+```
+
+### For decision tree
+
+```{r}
+y_prob.decisiontree = predict(classifier.decision.prune, newdata = test_set[-1])## probability
+y_pred.decisiontree = predict(classifier.decision.prune, newdata = test_set[-1], type = 'class')
+```
+
+confusing matrix and accurancy of Decision tree
+
+```{r}
+cm = table(test_set[, 1], y_pred.decisiontree)
+cm
+accurancy.desciontree = (cm[1,1]+cm[2,2])/sum(cm)
+print(paste('Accuracy of decision tree:',accurancy.desciontree))
+```
+
+Since the accuracy of test set of decision tree is less than that of logistic regression, logistic regression is a better model for predicting purposes
+
+## 2. Find a way to explain sensitivity, specificity and auc in the ROC to your client (in less than 250 words).
+
+```{r}
+library(ROCR)
+pr <- prediction(y_prob.logisitc, test_set$rating)
+prf <- performance(pr, measure = "tpr", x.measure = "fpr")
+plot(prf) ##ROC curve
+abline(a=0, b= 1)
+auc <- performance(pr, measure = "auc")
+auc <- auc@y.values[[1]]
+auc
+
+```
+
+
+
+# ROC and AUC of decision tree
+```{r}
+library(ROCR)
+pred <- prediction(y_prob.decisiontree[,2], test_set$rating)
+perf <- performance(pred,"tpr","fpr")
+plot(perf)
+abline(a=0, b= 1)
+auc2 <- performance(pred, measure = "auc")
+auc2 <- auc2@y.values[[1]]
+print(auc2)
+
+```
+
+See, sensitivity is on the y axis. it measure the ability of our model to specifify the good credit people among all acutual good credit people. However,
+it is not a fix percentage, because it depends on the proprotion of the number of good credit people in all oberservations. Therefore, we see this ROC curve.
+
+specificity measures ability of our model to specifify the bad credit people among all acutual bad credit people.
+
+AUC is the area between ROC curve and the 45 degree line divided by the area of the upper-left triangle. The larger AUC the model has, the better prediction the model has.
+Obviously, the logistic regression has larger AUC = 0.8305952, so it is a better model.
+

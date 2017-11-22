@@ -1,0 +1,185 @@
+---
+title: "A04_G48129884"
+output: html_document
+---
+
+## Part A
+
+Read the data
+You download this file from https://www.kaggle.com/ludobenistant/hr-analytics
+and use your own path 
+
+```{r}
+library(dplyr)
+library(tibble)
+library(xtable)
+library(ggplot2)
+
+```
+
+```{r}
+mydf <- read.csv("HR_comma_sep.csv")
+```
+
+###get rows and columns
+
+```{r}
+dim.data.frame(mydf)
+```
+
+###explore the data structure
+
+```{r}
+str(mydf)
+```
+
+###Correlate all the numeric fields: exclude catagorical data
+
+```{r}
+xtable(cor(subset(mydf, select = -c(sales, salary))))
+```
+
+
+###Create a correlation heat map
+
+```{r}
+library(reshape2)
+melted_cormat <- melt(cor(subset(mydf, select = -c(sales, salary))))
+head(melted_cormat)
+
+g <- ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_raster()
+g <- g + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+g
+```
+
+###Develop a 3-way table
+
+```{r}
+mydf$status <- ifelse(mydf$left == 1, "Left", "Stay")
+table(mydf$status,  mydf$salary, mydf$sales)
+```
+
+
+###Employees who leave by department
+
+```{r}
+left <- table(mydf$status,mydf$sales)
+leftm <- as.matrix(left)
+leftnum <- data.frame(leftm["Left",])
+colnames(leftnum)[1] <- "LEFT" 
+leftnum <- rownames_to_column(leftnum)
+
+ggplot(leftnum, aes(rowname, LEFT)) +
+  geom_col()
+
+leftnum$rowname <- factor(leftnum$rowname, levels = leftnum$rowname[order(leftnum$LEFT)])
+leftnum$rowname  # notice the changed order of factor levels
+
+ggplot(leftnum, aes(x = rowname, y = LEFT)) + 
+  theme_gray() + 
+  geom_bar(stat = "identity")
+```
+
+###employees who stay in the company by department
+
+```{r}
+left <- table(mydf$status,mydf$sales)
+leftm <- as.matrix(left)
+staynum <- data.frame(leftm["Stay",])
+colnames(staynum)[1] <- "Stay" 
+staynum <- rownames_to_column(staynum)
+
+
+staynum$rowname <- factor(staynum$rowname, levels = staynum$rowname[order(staynum$Stay)])
+staynum$rowname  # notice the changed order of factor levels
+
+ggplot(staynum, aes(x = rowname, y = Stay)) + 
+  theme_gray() + 
+  geom_bar(stat = "identity")
+```
+
+
+## Part B
+
+###employees who leave the company by salary level 
+```{r}
+ggplot(data = mydf[which(mydf$status == "Left"),], aes( x =  salary,  fill = salary))+ #Define the x and fill value
+geom_bar()+   # Add the bar plot
+labs(y = "# of left")
+```
+
+###employees who stay in the company by salary level 
+
+```{r}
+ggplot(data = mydf[which(mydf$status == "Stay"),], aes( x =  salary,  fill = salary))+ #Define the x and fill value
+geom_bar()+   # Add the bar plot
+labs(y = "# of stay")
+```
+
+###employees who leave the company by salary level AND department
+
+```{r}
+ggplot(data = mydf[which(mydf$status == "Left"),], aes( x =  sales,  fill = sales))+ #Define the x and fill value
+
+geom_bar()+   # Add the bar plot
+facet_grid(salary ~ .)+  #Create one bar plot per each Sex category
+labs(y = "# of left")
+
+
+```
+
+#employees who stay in the company by salary level AND department
+
+```{r}
+ggplot(data = mydf[which(mydf$status == "Stay"),], aes( x =  sales,  fill = sales))+ #Define the x and fill value
+#I use fill instead of color because color refers only to the perimeter of the bars and fill to the
+# inside of each figure
+geom_bar()+   # Add the bar plot
+facet_grid(salary ~ .)+  #Create one bar plot per each Sex category
+labs(y = "# of stay")
+
+
+
+```
+
+## Part C
+
+### Draw a bar plot of how many years did employees stay in the company before leaving
+### Year stayed in the company is the x axis
+
+```{r}
+ggplot(data = mydf[which(mydf$status == "Left"),], aes( x =  time_spend_company,  fill = as.factor(time_spend_company)))+ #Define the x and fill value
+geom_bar()+   
+labs(y = "# of people")+scale_fill_discrete(name = "years before leaving")
+```
+
+
+### Draw a bar plot of how many years did employees stay in the company before leaving by department
+### Year stayed in the company is the x axis
+
+```{r}
+ggplot(data = mydf[which(mydf$status == "Left"),], aes( x =  time_spend_company,  fill = as.factor(time_spend_company)))+ #Define the x and fill value
+geom_bar()+   
+facet_grid(sales ~ .)+
+labs(y = "# of people")+scale_fill_discrete(name = "years before leaving")
+```
+
+### Draw a bar plot of how many years did employees stay in the company before leaving by Salary
+### Year stayed in the company is the x axis
+
+```{r}
+ggplot(data = mydf[which(mydf$status == "Left"),], aes( x =  time_spend_company,  fill = as.factor(time_spend_company)))+ #Define the x and fill value
+  geom_bar()+   # Add the bar plot
+  facet_grid(salary ~ .)+
+labs(y = "# of people")+scale_fill_discrete(name = "years before leaving")
+```
+
+AS the bar charts show, it is obvious to get three important patterns of reasons of employee leave their company:
+
+1. employees who work for three years are most likely to leave, despite their departments, their salaries. Also, as the year they stay increases, they are less likely to leave. However, employees who work less than three years are barely to leave.
+
+2. Salesman are most likely to leave among any other positions in company and technicians are second most likely to leave.
+
+3. comparing between two bar charts of number of people stay and leave by their salary, it is obvious that low salary is significant a reason for employee to leave.  
+

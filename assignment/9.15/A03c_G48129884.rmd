@@ -1,0 +1,54 @@
+---
+title: "A03c_G48129884"
+output: html_document
+---
+###a. Then run the following R commands. Please spend some time trying understand the code well.
+```{r}
+rnorm2 <- function(n,mean,sd) { mean+sd*scale(rnorm(n)) } 
+set.seed(1239)
+r1 <- rnorm2(100,25,4) 
+r2 <- rnorm2(50,10,3) 
+samplingframe <- c(r1,r2) 
+hist(samplingframe, breaks=20,col = "pink")
+```
+rnorm2 is a function that generate random variables from normal distribution with certain mean and stand deviation.
+Then get random seed(1239).
+After that, generate vector r1 with simple size =100, mean =25, sd =4 of normal distribution, so as r2, but with size =50, mean =10, sd =3 .
+Finally, get r1 r2 as a collection samplingframe and plot it as histogram.
+See this is the distribution and it is not normal distribution like.
+
+
+###b. Draw 50 samples of size 15, and plot the sampling distribution of means as a histogram.
+
+```{r}
+set.seed(1239)
+a=1:50
+for(i in 1:50) a[i]=mean(sample(samplingframe,size = 15, replace = T))
+hist(a, main = "plot the sampling distribution of means with sample size = 15")
+
+```
+
+```{r}
+set.seed(1239)
+b =1:50
+for(i in 1:50) b[i]=mean(sample(samplingframe,size = 45, replace = T))
+hist(b, main = "plot the sampling distribution of means with sample size = 45")
+```
+###d. Make sure that the distributions in parts b and c are on the same plot. Explain the three histograms in terms of their differences and similarities.
+
+```{r}
+op <- par(mfrow = c(1, 3)) 
+hist(samplingframe, breaks=20,col = "pink")
+f2=hist(a, main = "plot the sampling distribution of means with sample size = 15")
+hist(b, main = "plot the sampling distribution of means with sample size = 45")
+```
+
+First histogram discribe the distribution of population and it is not normal like.
+Second histogram is mean of sample with size = 15 and it is a little normal like.
+Third histogram is mean of sample with size = 45 and it is more normal like comparing to the two above.
+
+###e. Explain CLT in your own words. Restrict your response to less than 50 words.
+sampling from one population with any distribution, the distribution of mean of sample will be more normal like as sample size grows larger.
+
+###f. Does this exercise help you understand CLT? If so why? If not, why not? Restrict your response to less than 50 words.
+yes. If we make the sample and sample size much large enough even infinite, we can find the distribution of mean will be very close to normal distribution.

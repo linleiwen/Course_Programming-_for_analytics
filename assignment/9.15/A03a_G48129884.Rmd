@@ -1,0 +1,92 @@
+---
+title: "A03a_G48129884"
+output: html_document
+---
+# assignment3
+##part A
+### a
+import data
+```{r}
+library(readr)
+dataset <- read_csv("households.csv", 
+    col_types = cols( Household = col_character(), 
+        Location = col_factor(levels = c("1", 
+            "2", "3", "4")), Ownership = col_factor(levels = c("0", 
+            "1"))))
+head(dataset)
+```
+factor(nominal or ordinal):Household,Location,Ownership;
+
+numerical: First Income,Second,Income,Monthly,Payment,Utilities,Debt,Family Size
+
+### b
+Household is nominal, because it is a identification of each observation
+
+Location is nominal, because differnent value is a label for different location withoout hierarchy
+
+Ownership is nominal, because it is a label to identify the family own the house or not
+
+### c
+```{r }
+
+hist(dataset$`First Income`)
+
+```
+
+
+```{r}
+hist(dataset$Debt)
+```
+
+
+```{r}
+hist(dataset$`Family Size`)
+```
+```
+
+
+```{r}
+hist(dataset$Utilities)
+```
+
+```{r}
+hist(dataset$`Monthly Payment`)
+```
+
+```{r}
+hist(dataset$`Second Income`)
+```
+First income,Second Income, Monthly payment,family size are right skewed;
+
+debt and Utilities are relarively symmetric
+
+###d.Find the maximum and minimum debt levels for the households in this sample.
+
+```{r}
+max(dataset$Debt)
+
+```
+
+```{r}
+min(dataset$Debt)
+
+```
+###e.Find the indebtedness levels at each of the 25th, 50th, and 75th percentiles.
+```{r}
+quantile(dataset$Debt, c(.25, .50, .75)) 
+```
+###f
+```{r}
+IQR(dataset$Debt)
+
+```
+
+###g
+```{r}
+summary(data.frame(dataset))
+```
+According to data of summary, plot and histogram, there are four nominal or ordinal data which are Household, Location, Ownership and the rest are numerical data. In numercail data, First income,Second Income, Monthly payment,family size are right skewed. That means there small amount of the observations have large quantilty of first or second income or Monthly payment or family size. However, debt and Utilities are more symmetric
+Interestingly, there is small amount of people have large family and large income but their debt and Utilities are not larger than average people. That reminds me that superrich people don't consume or borrow proportional to amount of their wealth.
+
+
+
